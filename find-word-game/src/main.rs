@@ -2,11 +2,25 @@ use rand::{thread_rng,Rng}; // Fonction de la dependence Rand
 use std::{io, vec};
 
 // fonction permettant de determiner si une lettre appartient oui ou non a un mots.
+fn retirer_vie (pv_char:&str) -> &str {
+    let pv_char= match pv_char.char_indices().next_back() {
+        Some((index,_)) => &pv_char[..index],
+        None => ""
+    };
+
+    let pv_char= match pv_char.char_indices().next_back() {
+        Some((index,_)) => &pv_char[..index],
+        None => ""
+    };
+
+    return pv_char;
+}
+
 fn afficher_stat (pv_char:&str){
     println!("PV :{}",pv_char)
 }
 
-fn add_in_tab(lettre:char,tab:&Vec<char>)-> bool {
+fn add_in_tab(lettre:char,tab:&[char])-> bool {
     let mut is_in_tab :bool=false;
     for _i in tab.iter(){
         if *_i == lettre{
@@ -16,7 +30,6 @@ fn add_in_tab(lettre:char,tab:&Vec<char>)-> bool {
     }
     return is_in_tab;
 }
-
 
 fn find_letter(letter :char,words:&str)-> (bool ,u8,Vec<u8>){
 
@@ -38,9 +51,11 @@ fn find_letter(letter :char,words:&str)-> (bool ,u8,Vec<u8>){
         }
 }
 
+
+
 fn main() {
     let mut pv :u8 = 10;
-    let mut pv_char : &str = "❤️❤️❤️❤️❤️";
+    let mut pv_char : &str = "❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️";
     let words: [&str; 100] = [
         "arbre", "avion", "balai", "banane", "bateau", "bijou", "blanc", "boite", "bouche", "bouteille",
         "brique", "bureau", "cahier", "camion", "canape", "carotte", "casque", "chaise", "champ", "chapeau",
@@ -70,7 +85,7 @@ fn main() {
         println!("Entrez une lettre :");
 
         let mut ch_letter : Vec<char>=vec![];
-        let mut word_form: String = ch_letter.clone().into_iter().collect();
+        let mut word_form: String = ch_letter.iter().collect();
 
         for _i in 0..words_choosed.chars().count(){
             ch_letter.push('_');
@@ -86,6 +101,7 @@ fn main() {
 
             while proposition.trim().chars().next() == None {
                 println!("⚠️ ATTENTION !! les caractères nuls ne sont pas autorisés .");
+                proposition.clear();
                 io::stdin()
                     .read_line(&mut proposition)
                     .expect("⚠️ vous devez impérativement entrer un caractère.");
@@ -106,7 +122,8 @@ fn main() {
                     let lettre :char = proposition.trim().chars().next().unwrap();
                     ch_letter[_i as usize] = lettre; 
                 }
-                word_form = ch_letter.clone().into_iter().collect();
+                // Into_iter transforme le tableau en element iterable tandisque .iter ce contente d iterer sur le tableau.
+                word_form = ch_letter.iter().collect();
 
                 println!("La lettre '{}' appartient au mots mystere.",lettre);
                 println!("Il apparait {} fois .",test.1);
@@ -115,21 +132,21 @@ fn main() {
                 afficher_stat(pv_char);
                 println!("Entrez une nouvelle lettre :");
             }
-
+            
             else {
                 if !add_in_tab(lettre, &tab_letter_used) {
                     tab_letter_used.push(lettre);
                     pv-=1;
-                    pv_char = match pv_char.char_indices().next_back() {
-                        Some((index,_)) => &pv_char[..index],
-                        None =>"",
-                    };
+                    pv_char = retirer_vie(&pv_char);
+                    
                 } else {
                     println!("Cette lettre a déja été cité .");
                 }
-
+                
                 println!(" La lettre {} n'appartient pas au mots mystere.",lettre);
                 println!(" lettres deja utilisé : {:?}",tab_letter_used);
+                println!("Proposition = {}",word_form);
+
                 afficher_stat(pv_char);
                 
                 if pv ==0 {
@@ -155,7 +172,7 @@ fn main() {
         
         if choix.trim() == "y" {
             pv = 10;
-            pv_char = "❤️❤️❤️❤️❤️";
+            pv_char = "❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️";
         } else {
             break;
         }
