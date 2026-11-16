@@ -1,40 +1,10 @@
 use rand::{thread_rng,Rng}; // Fonction de la dependence Rand
-use std::{io, vec};
+use std::io;
 
-// fonction permettant de determiner si une lettre appartient oui ou non a un mots.
-fn retirer_vie (pv_char:&str) -> &str {
-    let pv_char= match pv_char.char_indices().next_back() {
-        Some((index,_)) => &pv_char[..index],
-        None => ""
-    };
-
-    let pv_char= match pv_char.char_indices().next_back() {
-        Some((index,_)) => &pv_char[..index],
-        None => ""
-    };
-
-    return pv_char;
-}
-
-fn afficher_stat (pv_char:&str){
-    println!("PV :{}",pv_char)
-}
-
-fn add_in_tab(lettre:char,tab:&[char])-> bool {
-    let mut is_in_tab :bool=false;
-    for _i in tab.iter(){
-        if *_i == lettre{
-            is_in_tab = true;
-            break;
-        }
-    }
-    return is_in_tab;
-}
-
-fn find_letter(letter :char,words:&str)-> (bool ,u8,Vec<u8>){
+fn find_letter(letter :char,words:&str)-> (u8,Vec<u8>){
 
     let mut letter_count :u8 = 0;
-    let mut index_tab: Vec<u8> = vec![];
+    let mut index_tab: Vec<u8> =[].to_vec();
     let mut index_value :u8 = 0;
 
     for i in words.chars() {
@@ -45,17 +15,26 @@ fn find_letter(letter :char,words:&str)-> (bool ,u8,Vec<u8>){
         index_value += 1
     }
 
-    if letter_count != 0 { return (true,letter_count,index_tab);// Retourne un tuple de (bool,u8,un Vec)
-        }
-    else { return (false,letter_count,[].to_vec());// Retourne un tuple de valeur nulle .
-        }
+    if letter_count != 0 { 
+        (letter_count,index_tab)// Retourne un tuple de (bool,u8,un Vec)
+    }
+    else { 
+        (letter_count,[].to_vec())// Retourne un tuple de valeur nulle .
+    }
 }
 
+fn lire_proposition () -> String {
+    let mut value :String =String::new();
+     io::stdin()
+        .read_line( &mut value)
+        .expect("⚠️ vous devez impérativement entrer un caractère.");
+
+    value
+}
 
 
 fn main() {
     let mut pv :u8 = 10;
-    let mut pv_char : &str = "❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️";
     let words: [&str; 100] = [
         "arbre", "avion", "balai", "banane", "bateau", "bijou", "blanc", "boite", "bouche", "bouteille",
         "brique", "bureau", "cahier", "camion", "canape", "carotte", "casque", "chaise", "champ", "chapeau",
@@ -77,86 +56,84 @@ fn main() {
 
     while pv !=0 {
 
-        let words_index : usize = thread_rng().gen_range(0..100);
+        let words_index : usize = thread_rng().gen_range(0..words.len());
         let words_choosed: &str = words[words_index];
-        let mut tab_letter_used: Vec<char> = vec![];
+        let mut tab_letter_used: Vec<char> = [].to_vec();
 
         println!("Le mots contient {} lettres.",words_choosed.chars().count());
         println!("Entrez une lettre :");
 
-        let mut ch_letter : Vec<char>=vec![];
-        let mut word_form: String = ch_letter.iter().collect();
+        let mut ch_letter : Vec<char>=[].to_vec();
 
         for _i in 0..words_choosed.chars().count(){
             ch_letter.push('_');
         }
 
+        let mut word_form: String = String::from("");
+
         while (word_form != words_choosed) && (pv!=0) {
 
-            let mut proposition :String = String::new();
+            let mut proposition :String ;
+            proposition =lire_proposition();
 
-            io::stdin()
-                .read_line(&mut proposition)
-                .expect("⚠️ vous devez impérativement entrer un caractère.");
-
-            while proposition.trim().chars().next() == None {
+            while proposition.trim().chars().next().is_none() {
                 println!("⚠️ ATTENTION !! les caractères nuls ne sont pas autorisés .");
                 proposition.clear();
-                io::stdin()
-                    .read_line(&mut proposition)
-                    .expect("⚠️ vous devez impérativement entrer un caractère.");
+                proposition =lire_proposition()
             }
 
-            let lettre :char = proposition.trim().chars().next().unwrap();
+            let lettre :char = proposition.trim().chars().next().unwrap().to_ascii_lowercase();
                 
-            let test :(bool ,u8,Vec<u8>) = find_letter(lettre,words_choosed);
+            let test :(u8,Vec<u8>) = find_letter(lettre,words_choosed);
 
-            if test.0 {
-                if !add_in_tab(lettre, &tab_letter_used) {
+            if words_choosed.contains(lettre) {
+                if !tab_letter_used.contains(&lettre) {
                     tab_letter_used.push(lettre);
                 } else {
                     println!("Cette lettre a déja été cité .");
+                    continue;
                 }
 
-                for _i in test.2 {
-                    let lettre :char = proposition.trim().chars().next().unwrap();
-                    ch_letter[_i as usize] = lettre; 
+                for i in test.1 {
+                    ch_letter[ i as usize] = lettre; 
                 }
                 // Into_iter transforme le tableau en element iterable tandisque .iter ce contente d iterer sur le tableau.
                 word_form = ch_letter.iter().collect();
 
                 println!("La lettre '{}' appartient au mots mystere.",lettre);
-                println!("Il apparait {} fois .",test.1);
+                println!("Il apparait {} fois .",test.0);
                 println!("Proposition = {}",word_form);
                 println!(" lettres deja utilisé : {:?}",tab_letter_used);
-                afficher_stat(pv_char);
-                println!("Entrez une nouvelle lettre :");
+
             }
             
             else {
-                if !add_in_tab(lettre, &tab_letter_used) {
+                if tab_letter_used.contains(&lettre) {
                     tab_letter_used.push(lettre);
                     pv-=1;
-                    pv_char = retirer_vie(&pv_char);
                     
                 } else {
                     println!("Cette lettre a déja été cité .");
+                    continue;
                 }
                 
                 println!(" La lettre {} n'appartient pas au mots mystere.",lettre);
                 println!(" lettres deja utilisé : {:?}",tab_letter_used);
                 println!("Proposition = {}",word_form);
 
-                afficher_stat(pv_char);
                 
                 if pv ==0 {
                     println!(" vous avez perdu toutes vos points de vie . Désolé");
                     println!(" le mot était :{} .",words_choosed);
                 }
-                else{
-                    println!("Entrez une nouvelle lettre :");
-                }
+                
             }
+
+            if pv != 0 && word_form != words_choosed{
+                println!("PV :{}","❤️".repeat(pv as usize));
+                println!("Entrez une nouvelle lettre :");
+            }
+
         }
         if pv != 0{
             println!("🏆 Bravo , vous avez deviné le mots mystère 🏆.");
@@ -165,14 +142,11 @@ fn main() {
 
         // Permettre au joueur de recommencer une nouvelle partie .
         println!(" Voulez-vous continué à jouer? y/n");
-        let mut choix :String = String::new();
-        io::stdin()
-            .read_line(&mut choix)
-            .expect(" vous devez choisir entre y et n .");
+        let choix :String ;
+        choix = lire_proposition();
         
         if choix.trim() == "y" {
             pv = 10;
-            pv_char = "❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️";
         } else {
             break;
         }
