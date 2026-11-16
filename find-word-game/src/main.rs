@@ -108,7 +108,7 @@ fn main() {
             }
             
             else {
-                if tab_letter_used.contains(&lettre) {
+                if !tab_letter_used.contains(&lettre) {
                     tab_letter_used.push(lettre);
                     pv-=1;
                     
