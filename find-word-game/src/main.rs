@@ -1,51 +1,73 @@
 use rand::{thread_rng,Rng}; // Fonction de la dependence Rand
-use std::io;
+use std::io::{self, Write};
 
-fn find_letter(letter :char,words:&str)-> (u8,Vec<u8>){
+fn find_letter(letter :char,words:&str)-> Vec<u8> {
 
-    let mut letter_count :u8 = 0;
-    let mut index_tab: Vec<u8> =[].to_vec();
+    let mut index_tab: Vec<u8> =vec![];
     let mut index_value :u8 = 0;
 
     for i in words.chars() {
         if i == letter { 
-            letter_count+= 1; 
             index_tab.push(index_value);
         }
         index_value += 1
     }
 
-    if letter_count != 0 { 
-        (letter_count,index_tab)// Retourne un tuple de (bool,u8,un Vec)
-    }
-    else { 
-        (letter_count,[].to_vec())// Retourne un tuple de valeur nulle .
-    }
+    index_tab
 }
 
-fn lire_proposition () -> String {
-    let mut value :String =String::new();
-     io::stdin()
-        .read_line( &mut value)
-        .expect("⚠️ vous devez impérativement entrer un caractère.");
+fn lire_proposition () -> Option<char> {
+    loop{
 
-    value
+        println!("Entrez une lettre :");
+        let _ = io::stdout().flush();
+        let mut saisie :String= String::new();
+
+        match io::stdin().read_line(&mut saisie){
+            Ok(0) => return None,
+            Ok(_) => {
+                if  saisie.trim().chars().count() == 1{
+                    
+                    if let Some(c) = saisie.trim().chars().next(){
+                        if c.is_alphabetic() {
+                            return  Some(c.to_ascii_lowercase());
+                        }
+                        else {
+                            println!("ATTENTION !!! Vous devez rentrer uniquement une lettre ."); 
+                        }
+                    }
+                    else {
+                        println!("ATTENTION !!! veuillez ne pas rentrer des caractères vides . ");
+                    }
+                }
+                else {
+                    println!("ATTENTION !!! Vous devez rentrer uniquement une lettre .");
+                }
+            },
+            Err(error)=>{
+                eprintln!("erreur:{error}");
+                saisie.clear();
+                return None ;
+            },
+
+        }
+    }
 }
 
 
 fn main() {
     let mut pv :u8 = 10;
     let words: [&str; 100] = [
-        "arbre", "avion", "balai", "banane", "bateau", "bijou", "blanc", "boite", "bouche", "bouteille",
-        "brique", "bureau", "cahier", "camion", "canape", "carotte", "casque", "chaise", "champ", "chapeau",
-        "chaton", "chemin", "chemise", "cheval", "chien", "citron", "clavier", "cloche", "cochon", "coffre",
-        "colline", "compte", "crayon", "cuisine", "danse", "dauphin", "dentiste", "dessin", "doigt", "drapeau",
-        "ecole", "ecran", "enfant", "epaule", "etoile", "fauteuil", "fenetre", "feuille", "fleur", "fleuve",
-        "foret", "fourmi", "fraise", "fromage", "fruit", "garage", "garcon", "gateau", "girafe", "glace",
-        "gomme", "graine", "guitare", "herbe", "heure", "hiver", "horloge", "image", "insecte", "jardin",
-        "jaune", "joueur", "journal", "jupe", "lampe", "lapin", "lettre", "livre", "lumiere", "lunettes",
-        "maison", "manteau", "marche", "marteau", "matin", "medecin", "melon", "miroir", "montagne", "montre",
-        "moteur", "moulin", "mouton", "musique", "nuage", "oiseau", "ombre", "orange", "ordinateur", "oreille"
+        "abracadabra", "acrobatie", "alchimiste", "anachronisme", "apothicaire", "archipel", "astrophysique", "autobiographie", "avalanche", "bibliotheque",
+        "bouleversement", "boulangerie", "bureaucratie", "calligraphie", "cataclysme", "catastrophe", "chrysanthème", "cinematographe", "clairvoyance", "claustrophobie",
+        "constellation", "contrebandier", "crocodile", "cryptographie", "cyclone", "dictionnaire", "dinosaure", "diplomatique", "disparition", "dysfonctionnement",
+        "eclaircie", "electricite", "encyclopedie", "enigmatique", "equilibriste", "escalade", "exceptionnel", "excentrique", "expedition", "extraordinaire",
+        "fantasmagorie", "fluorescent", "forteresse", "gastronomie", "gymnastique", "hallucination", "hieroglyphe", "hippopotame", "horizontal", "hypnotiseur",
+        "imagination", "incandescent", "inexplicable", "interrogation", "kaleidoscope", "kilometrage", "labyrinthe", "laboratoire", "luxueux", "magnifique",
+        "mathematiques", "melancolique", "metamorphose", "microscope", "mystificateur", "nostalgique", "obscurantisme", "orchestre", "ouragan", "palindrome",
+        "papillon", "paranormal", "parallelepipede", "philosophie", "pneumatique", "psychologie", "pyramide", "quadrilatere", "quintessence", "rhinoceros",
+        "rhododendron", "scaphandrier", "silhouette", "somnambule", "spectaculaire", "stratagème", "symphonie", "synchronisation", "technologie", "telescope",
+        "thermometre", "tourbillon", "transparence", "tremblement", "trompette", "typographie", "vertigineux", "volcanologue", "xylophone", "zeppelin"
     ];  // Tableau de mots .
     
     println!("😃 Salut je m'appelle Jason, j'ai crée le jeu : Devine le mots en rust😃");
@@ -58,33 +80,20 @@ fn main() {
 
         let words_index : usize = thread_rng().gen_range(0..words.len());
         let words_choosed: &str = words[words_index];
-        let mut tab_letter_used: Vec<char> = [].to_vec();
+        let mut tab_letter_used: Vec<char> = vec![];
 
-        println!("Le mots contient {} lettres.",words_choosed.chars().count());
-        println!("Entrez une lettre :");
+        println!("Le mots contient {} lèttres.",words_choosed.chars().count());
 
-        let mut ch_letter : Vec<char>=[].to_vec();
+        let mut ch_letter : Vec<char>=vec!['_';words_choosed.chars().count()];
 
-        for _i in 0..words_choosed.chars().count(){
-            ch_letter.push('_');
-        }
-
-        let mut word_form: String = String::from("");
+        let mut word_form: String = ch_letter.iter().collect();
 
         while (word_form != words_choosed) && (pv!=0) {
 
-            let mut proposition :String ;
-            proposition =lire_proposition();
 
-            while proposition.trim().chars().next().is_none() {
-                println!("⚠️ ATTENTION !! les caractères nuls ne sont pas autorisés .");
-                proposition.clear();
-                proposition =lire_proposition()
-            }
-
-            let lettre :char = proposition.trim().chars().next().unwrap().to_ascii_lowercase();
+            let Some(lettre) = lire_proposition() else {return ;};
                 
-            let test :(u8,Vec<u8>) = find_letter(lettre,words_choosed);
+            let test :Vec<u8> = find_letter(lettre ,words_choosed);
 
             if words_choosed.contains(lettre) {
                 if !tab_letter_used.contains(&lettre) {
@@ -94,14 +103,13 @@ fn main() {
                     continue;
                 }
 
-                for i in test.1 {
+                for i in test {
                     ch_letter[ i as usize] = lettre; 
                 }
                 // Into_iter transforme le tableau en element iterable tandisque .iter ce contente d iterer sur le tableau.
                 word_form = ch_letter.iter().collect();
 
                 println!("La lettre '{}' appartient au mots mystere.",lettre);
-                println!("Il apparait {} fois .",test.0);
                 println!("Proposition = {}",word_form);
                 println!(" lettres deja utilisé : {:?}",tab_letter_used);
 
@@ -123,7 +131,7 @@ fn main() {
 
                 
                 if pv ==0 {
-                    println!(" vous avez perdu toutes vos points de vie . Désolé");
+                    println!(" vous avez pèrdu toutes vos points de vie . Désolé");
                     println!(" le mot était :{} .",words_choosed);
                 }
                 
@@ -131,7 +139,6 @@ fn main() {
 
             if pv != 0 && word_form != words_choosed{
                 println!("PV :{}","❤️".repeat(pv as usize));
-                println!("Entrez une nouvelle lettre :");
             }
 
         }
@@ -140,12 +147,9 @@ fn main() {
             println!(" le mot était belle et bien :{} .",words_choosed);
         }
 
-        // Permettre au joueur de recommencer une nouvelle partie .
-        println!(" Voulez-vous continué à jouer? y/n");
-        let choix :String ;
-        choix = lire_proposition();
+        println!("\rVoulez-vous continué à jouer? y/n");
         
-        if choix.trim() == "y" {
+        if lire_proposition().unwrap_or(' ') == 'y' {
             pv = 10;
         } else {
             break;
